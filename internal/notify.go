@@ -9,8 +9,8 @@ func notify(context *Context, format string, args ...any) {
 	if context.UiMode {
 		notification := toast.Notification{
 			AppID:   "usbcopy",
-			Title:   "🛈 usbcopy has something happening",
-			Message: fmt.Sprintf(format, args...),
+			Title:   "ℹ️ " + fmt.Sprintf(format, args...),
+			Message: "",
 		}
 		err := notification.Push()
 		if err != nil {

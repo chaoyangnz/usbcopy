@@ -15,8 +15,8 @@ import (
 
 type DiskConfig struct {
 	Volume  string `mapstructure:"volume"`
-	SrcPath string `mapstructure:"src-path"`
-	DstPath string `mapstructure:"dst-path"`
+	SrcPath string `mapstructure:"src"`
+	DstPath string `mapstructure:"dst"`
 	Filters string `mapstructure:"filters"`
 }
 
@@ -51,18 +51,18 @@ func main() {
 
 	for i, conf := range conf.Disks {
 		contexts[i] = &Context{
-			UiMode:  true,
-			Volume:  conf.Volume,
-			SrcPath: conf.SrcPath,
-			DstPath: conf.DstPath,
-			Filters: strings.Split(conf.Filters, ","),
-			Mounted: false,
-			Count:   0,
+			UiMode:      true,
+			WatchVolume: conf.Volume,
+			SrcPath:     conf.SrcPath,
+			DstPath:     conf.DstPath,
+			Filters:     strings.Split(conf.Filters, ","),
+			Mounted:     false,
+			Count:       0,
 		}
 	}
 
 	// set logging
-	f, err := os.OpenFile("usbcopy.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile("usbcopy.log", os.O_RDWR|os.O_CREATE, 0666)
 	if err == nil {
 		log.SetOutput(f)
 	}
