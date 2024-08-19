@@ -1,0 +1,10 @@
+disks:
+  - volume: "Z 6_2"
+    src-path: "%volume%:/DCIM"
+    dst-path: "E:/Photos/raw/%year%-%month%-%day%/%name%_%counter%.%extension%"
+    filters: "NEF,JPEG,JPG,MOV,MP4"
+  - volume: "Z 6_3"
+    src-path: "%volume%:/DCIM"
+    dst-path: "E:/Photos/raw/%year%-%month%-%day%/%name%_%counter%.%extension%"
+    filters: "NEF,JPEG,JPG,MOV,MP4"
+interval: 3
