@@ -34,10 +34,11 @@ func visitFn(context *Context) fs.WalkDirFunc {
 		info, _ := entry.Info()
 
 		if !entry.IsDir() && filter(extension, context.Filters) {
-			year := info.ModTime().Format("2006")
-			month := info.ModTime().Format("01")
-			day := info.ModTime().Format("02")
-			midnight, _ := time.Parse("2006-01-02", fmt.Sprintf("%s-%s-%s", year, month, day))
+			ts := info.ModTime().Local()
+			year := ts.Format("2006")
+			month := ts.Format("01")
+			day := ts.Format("02")
+			midnight, _ := time.ParseInLocation("2006-01-02", fmt.Sprintf("%s-%s-%s", year, month, day), ts.Location())
 			diff := strconv.FormatInt(info.ModTime().Unix()-midnight.Unix(), 10)
 			srcDirRel, _ := filepath.Rel(context.SrcBase, srcDir)
 			dstPath := interpolate(context.DstPath, []string{
