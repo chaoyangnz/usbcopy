@@ -1,4 +1,4 @@
-disks:
+volumes:
   - volume: "Z 6_2"
     src: "%volume%:/DCIM"
     dst: "E:/Photos/raw/%year%-%month%-%day%/%name%_%counter%.%extension%"

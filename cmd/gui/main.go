@@ -13,7 +13,7 @@ import (
 	. "usbcopy/internal"
 )
 
-type DiskConfig struct {
+type VolumeConfig struct {
 	Volume  string `mapstructure:"volume"`
 	SrcPath string `mapstructure:"src"`
 	DstPath string `mapstructure:"dst"`
@@ -21,8 +21,8 @@ type DiskConfig struct {
 }
 
 type Config struct {
-	Interval int          `mapstructure:"interval"`
-	Disks    []DiskConfig `mapstructure:"disks"`
+	Interval int            `mapstructure:"interval"`
+	Volumes  []VolumeConfig `mapstructure:"volumes"`
 }
 
 func main() {
@@ -36,7 +36,7 @@ func main() {
 		config.Decode(&conf)
 	} else {
 		conf = Config{
-			Disks: []DiskConfig{
+			Volumes: []VolumeConfig{
 				{
 					Volume:  "Z 6_2",
 					SrcPath: "%volume%:/DCIM",
@@ -47,9 +47,9 @@ func main() {
 		}
 	}
 
-	contexts := make([]*Context, len(conf.Disks))
+	contexts := make([]*Context, len(conf.Volumes))
 
-	for i, conf := range conf.Disks {
+	for i, conf := range conf.Volumes {
 		contexts[i] = &Context{
 			UiMode:      true,
 			WatchVolume: conf.Volume,
