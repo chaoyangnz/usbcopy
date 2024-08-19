@@ -6,17 +6,17 @@ import (
 )
 
 func main() {
-	driveNamePtr := flag.String("drive-name", "NIKON Z 6_2", "drive name")
-	sourceFolderPtr := flag.String("source-folder", "DCIM", "relative path in source drive")
-	destinationFolderPtr := flag.String("destination-folder", "E:/Photos/raw", "absolute path to the destination folder")
-	fileExtensionsPtr := flag.String("file-extensions", ".NEF,.JPEG,.JPG,.MOV,.MP4", "a comma seperated list of file extensions")
-	intervalPtr := flag.Int("interval", 3, "watch interval")
+	volumeNamePtr := flag.String("volume-name", "Z 6_2", "volume name")
+	sourcePathPtr := flag.String("source-path", "%volume%:/DCIM", "absolute path in source drive")
+	destinationPathPtr := flag.String("destination-path", "E:/Photos/raw/%year%-%month%-%day%/%name%_%counter%.%extension%", "absolute path to the destination folder")
+	fileExtensionsPtr := flag.String("file-extensions", "NEF,JPEG,JPG,MOV,MP4", "a comma seperated list of file extensions without prefixed dot")
+	intervalPtr := flag.Int("interval", 3, "watch interval in seconds")
 
 	flag.Parse()
 
-	DRIVE_NAME = *driveNamePtr
-	SOURCE_FOLDER = *sourceFolderPtr
-	DESTINATION_FOLDER = *destinationFolderPtr
+	VOLUME_NAME = *volumeNamePtr
+	SOURCE_PATH = *sourcePathPtr
+	DESTINATION_PATH = *destinationPathPtr
 	FILE_EXTENSIONS = strings.Split(*fileExtensionsPtr, ",")
 	INTERVAL = *intervalPtr
 

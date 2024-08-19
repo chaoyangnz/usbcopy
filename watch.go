@@ -7,14 +7,15 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
 )
 
-var DRIVE_NAME string
-var SOURCE_FOLDER string
-var DESTINATION_FOLDER string
+var VOLUME_NAME string
+var SOURCE_PATH string
+var DESTINATION_PATH string
 var FILE_EXTENSIONS []string = nil
 var INTERVAL = 3
 
@@ -49,7 +50,7 @@ func detect() (string, string) {
 		}
 		id := x[0]
 		name := strings.TrimSpace(x[1])
-		if name == DRIVE_NAME {
+		if strings.Contains(name, VOLUME_NAME) {
 			return id, name
 		}
 	}
@@ -59,19 +60,24 @@ func detect() (string, string) {
 
 func Watch() {
 	for range time.Tick(time.Second * time.Duration(INTERVAL)) {
-		drive, name := detect()
-		mounted := drive != ""
+		volume, name := detect()
+		sourcebase := interpolate(SOURCE_PATH, []string{
+			"%volume%",
+		}, []string{
+			volume,
+		})
+		mounted := volume != ""
 		if !MOUNTED && mounted {
 			MOUNTED = mounted
-			fmt.Printf("USB %s (%s:) injected\n", name, drive)
-			filepath.WalkDir(fmt.Sprintf("%s:/%s", drive, SOURCE_FOLDER), visit)
+			fmt.Printf("USB %s (%s:) injected\n", name, volume)
+			filepath.WalkDir(sourcebase, visit)
 			if COUNT != 0 {
 				fmt.Printf("🍻 %d files copied 👏\n", COUNT)
 			}
 			COUNT = 0
 		} else if MOUNTED && !mounted {
 			MOUNTED = mounted
-			fmt.Printf("USB %s (%s:) ejected\n", name, drive)
+			fmt.Printf("USB %s (%s:) ejected\n", name, volume)
 		} else {
 			fmt.Printf("tick\n")
 		}
@@ -87,30 +93,76 @@ func filter(extension string) bool {
 	return false
 }
 
-func visit(path string, entry fs.DirEntry, err error) error {
+func interpolate(s string, vars []string, vals []string) string {
+	str := s
+	for i, _ := range vars {
+		str = strings.ReplaceAll(str, vars[i], vals[i])
+	}
+	return filepath.Clean(str)
+}
+
+func getExtension(filename string) string {
+	ext := filepath.Ext(filename)
+	if ext == "" {
+		return ""
+	}
+	return strings.ToUpper(ext[1:])
+}
+
+func visit(sourcepath string, entry fs.DirEntry, err error) error {
+
+	sourcedir := filepath.Dir(sourcepath)
+	volume := filepath.VolumeName(sourcepath)
 	filename := entry.Name()
 	name := strings.TrimSuffix(filename, filepath.Ext(filename))
-	extension := strings.ToUpper(filepath.Ext(filename))
+	extension := getExtension(filename)
 	info, _ := entry.Info()
-	if !entry.IsDir() && filter(extension) {
-		yyyyMMdd := info.ModTime().Format("2006-01-02")
-		dir := filepath.Join(DESTINATION_FOLDER, yyyyMMdd)
-		instant := info.ModTime().Unix()
-		p := filepath.Join(dir, fmt.Sprintf("%s_%d%s", name, instant, extension))
 
-		// create dir per day
-		err := os.MkdirAll(dir, os.ModePerm)
+	if !entry.IsDir() && filter(extension) {
+		year := info.ModTime().Format("2006")
+		month := info.ModTime().Format("01")
+		day := info.ModTime().Format("02")
+		midnight, _ := time.Parse("2006-01-02", fmt.Sprintf("%s-%s-%s", year, month, day))
+		diff := strconv.FormatInt(info.ModTime().Unix()-midnight.Unix(), 10)
+		sourcebase := interpolate(SOURCE_PATH, []string{
+			"%volume%",
+		}, []string{
+			volume,
+		})
+		sourcereldir, _ := filepath.Rel(sourcebase, sourcedir)
+		destpath := interpolate(DESTINATION_PATH, []string{
+			"%year%",
+			"%month%",
+			"%day%",
+			"%dir%",
+			"%filename%",
+			"%name%",
+			"%extension%",
+			"%counter%",
+		}, []string{
+			year,
+			month,
+			day,
+			sourcereldir,
+			filename,
+			name,
+			extension,
+			diff,
+		})
+		destdir := filepath.Dir(destpath)
+		// create dir first
+		err := os.MkdirAll(destdir, os.ModePerm)
 		if err != nil {
-			fmt.Printf("Failed to create %s\n", dir)
+			fmt.Printf("Failed to create %s\n", destdir)
 			return nil
 		}
 		// move file to destination
-		err = moveFile(path, p)
+		err = moveFile(sourcepath, destpath)
 		if err != nil {
-			fmt.Printf("Failed to copy %s to %s\n", path, p)
+			fmt.Printf("Failed to copy %s to %s %v\n", sourcepath, destpath, err)
 			return nil
 		}
-		fmt.Printf("Copied from %s to %s\n", path, p)
+		fmt.Printf("Copied from %s to %s\n", sourcepath, destpath)
 		COUNT += 1
 	}
 
