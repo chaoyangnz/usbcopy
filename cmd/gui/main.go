@@ -1,9 +1,9 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"github.com/getlantern/systray"
-	"github.com/getlantern/systray/example/icon"
 	"github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/yaml"
 	"log"
@@ -72,14 +72,17 @@ func main() {
 	systray.Run(onReadyFn(ticker, contexts), onExitFn(ticker, contexts))
 }
 
+//go:embed icon.ico
+var icon []byte
+
 func onReadyFn(ticker *time.Ticker, contexts []*Context) func() {
 	return func() {
-		systray.SetIcon(icon.Data)
+		systray.SetIcon(icon)
 		systray.SetTitle("usbcopy")
 		systray.SetTooltip("copy usb to destination files automatically")
 		mQuit := systray.AddMenuItem("Quit", "Quit the whole app")
 		// Sets the icon of a menu item. Only available on Mac and Windows.
-		mQuit.SetIcon(icon.Data)
+		mQuit.SetIcon(icon)
 
 		go func() {
 			<-mQuit.ClickedCh
