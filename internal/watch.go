@@ -71,10 +71,10 @@ func Watch(ticker *time.Ticker, contexts ...*Context) {
 			}, []string{
 				volume,
 			})
-			context.SrcBase = sourcebase
 			mounted := volume != ""
 			if !context.Mounted && mounted {
 				context.Mounted = mounted
+				context.SrcBase = sourcebase
 				notify(context, "USB %s (%s:) injected", name, volume)
 				filepath.WalkDir(sourcebase, visitFn(context))
 				if context.Count != 0 {

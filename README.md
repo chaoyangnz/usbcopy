@@ -45,12 +45,12 @@ In GUI mode, there is a `usbcopy.yml` beside for configuration and `usbcopy.log`
 
 ### variables
 
-When you specify `source-path`, `destination-path`, some variables can be used to dynamically build the path
+When you specify `src-path`, `dst-path`, some variables can be used to dynamically build the path
 
-- source-path
+- `src-path`
   - `%volume%`: volume letter which was detected by `usbcopy`
 
-- destination-path
+- `dst-path`
   - `%filename%`: file name with extension
   - `%name%`: file name only
   - `%extension%`: file extension
